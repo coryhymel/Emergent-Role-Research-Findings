@@ -268,6 +268,15 @@ td.mix{color:#5d6b67;font-size:13px}
 .minibar .mv{font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--body);width:34px;text-align:right}
 .cov{font-variant-numeric:tabular-nums}
 @media(max-width:720px){.hide-sm{display:none}}
+tbody tr.crow{cursor:pointer}
+td.rk .chev{display:inline-block;margin-right:7px;color:var(--light-kale);font-size:11px;
+  transition:transform .2s ease;transform:rotate(0deg);vertical-align:1px}
+tbody tr.crow.is-open{background:var(--lightest-kale)}
+tbody tr.crow.is-open .chev{transform:rotate(90deg);color:var(--emerald)}
+tr.detail-row > td{padding:0;border-top:none}
+tr.detail-row .fcard{border-radius:0;border-left:none;border-right:none;border-bottom:none;
+  box-shadow:none;animation:detailIn .35s cubic-bezier(.2,.7,.3,1)}
+@keyframes detailIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 
 /* ---- validation ---- */
 .valgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px}
@@ -595,7 +604,7 @@ td.mix{color:#5d6b67;font-size:13px}
   <div class="container">
     <span class="eyebrow kicker">The full set</span>
     <h2 class="head">Every candidate, ranked</h2>
-    <p class="lead narrow">All 27 detected bundles. Click a column heading to sort. "In the wild" marks roles coherent in Fortune 500 hiring but not yet named in the standard occupation dictionaries and "in canon" marks roles those dictionaries already widley recognize.</p>
+    <p class="lead narrow">All 27 detected bundles. Click a column heading to sort, or click any row to expand its full profile. "In the wild" marks roles coherent in Fortune 500 hiring but not yet named in the standard occupation dictionaries and "in canon" marks roles those dictionaries already widley recognize.</p>
     <div class="tablewrap">
       <table id="catalog-table">
         <thead><tr>
@@ -746,62 +755,65 @@ const fmt = n => n.toLocaleString('en-US');
     .attr('fill','#10292C').text(d=>d.label.length>22?d.label.slice(0,21)+'…':d.label);
 })();
 
+/* ---------- featured card markup (shared by featured section + table rows) ---------- */
+const MIXCOL = ['#338632','#307C84','#7CBFC7','#7FC87C','#B0D6CE','#cbd6d2'];
+function cardHTML(c){
+  const t = tierOf(c.emergence);
+  const tb = `<span class="badge ${t}">${tierLabel(t)}${c.emergence!==null?' · '+c.emergence.toFixed(3):''}</span>`;
+  const cb = c.canon==='in-the-wild'
+    ? '<span class="badge wild">In the wild</span>'
+    : '<span class="badge canon">In canon</span>';
+  // home mix
+  const entries = Object.entries(c.home_mix);
+  const total = entries.reduce((s,[,v])=>s+v,0);
+  const top = entries.slice(0,5);
+  const restPct = Math.round(100*(total - top.reduce((s,[,v])=>s+v,0))/total);
+  let segs='', key='';
+  top.forEach(([role,v],i)=>{
+    const p = 100*v/total;
+    segs += `<span style="width:${p}%;background:${MIXCOL[i]}"></span>`;
+    key += `<span style="margin-right:14px;white-space:nowrap"><i style="background:${MIXCOL[i]}"></i>${role} ${Math.round(p)}%</span>`;
+  });
+  if(restPct>0){ segs += `<span style="width:${restPct}%;background:${MIXCOL[5]}"></span>`;
+    key += `<span style="white-space:nowrap"><i style="background:${MIXCOL[5]}"></i>other ${restPct}%</span>`; }
+  const chips = c.bridging.slice(0,10).map(s=>`<span class="chip bridge">${s}</span>`).join('');
+  const vintage = c.median_vintage
+    ? `median ${c.median_vintage} · ${Math.round(c.pct_recent*100)}% born ≥2023 (${c.n_dated}/${c.n_top} dated)`
+    : 'no datable technologies';
+  return `
+    <div class="fcard">
+      <div class="left">
+        <div class="fhead">
+          <span class="rk">#${c.rank}</span>
+          <h3>${c.label}</h3>
+          ${tb} ${cb}
+        </div>
+        <p class="desc">${c.desc}</p>
+        <div class="chips">${chips}</div>
+      </div>
+      <div class="right">
+        <div class="rlabel">Bridges these roles</div>
+        <div class="mix-bar">${segs}</div>
+        <div class="mix-key">${key}</div>
+        <div style="margin-top:18px">
+          <div class="meta-row"><span class="k">Coverage</span><span class="v">${fmt(c.coverage)} postings · ${c.n_members} skills</span></div>
+          <div class="meta-row"><span class="k">Vintage</span><span class="v">${vintage}</span></div>
+          <div class="meta-row"><span class="k">Title gap</span><span class="v">${fmt(c.n_div)} of ${fmt(c.n_pure)} pure-title postings (${Math.round(c.div_rate*100)}%) already show the bundle</span></div>
+        </div>
+      </div>
+    </div>`;
+}
+
 /* ---------- featured cards ---------- */
 (function featured(){
   const host = document.getElementById('featured-cards');
-  const MIXCOL = ['#338632','#307C84','#7CBFC7','#7FC87C','#B0D6CE','#cbd6d2'];
-  CANDS.slice(0,6).forEach(c=>{
-    const t = tierOf(c.emergence);
-    const tb = `<span class="badge ${t}">${tierLabel(t)}${c.emergence!==null?' · '+c.emergence.toFixed(3):''}</span>`;
-    const cb = c.canon==='in-the-wild'
-      ? '<span class="badge wild">In the wild</span>'
-      : '<span class="badge canon">In canon</span>';
-    // home mix
-    const entries = Object.entries(c.home_mix);
-    const total = entries.reduce((s,[,v])=>s+v,0);
-    const top = entries.slice(0,5);
-    const restPct = Math.round(100*(total - top.reduce((s,[,v])=>s+v,0))/total);
-    let segs='', key='';
-    top.forEach(([role,v],i)=>{
-      const p = 100*v/total;
-      segs += `<span style="width:${p}%;background:${MIXCOL[i]}"></span>`;
-      key += `<span style="margin-right:14px;white-space:nowrap"><i style="background:${MIXCOL[i]}"></i>${role} ${Math.round(p)}%</span>`;
-    });
-    if(restPct>0){ segs += `<span style="width:${restPct}%;background:${MIXCOL[5]}"></span>`;
-      key += `<span style="white-space:nowrap"><i style="background:${MIXCOL[5]}"></i>other ${restPct}%</span>`; }
-    const chips = c.bridging.slice(0,10).map(s=>`<span class="chip bridge">${s}</span>`).join('');
-    const vintage = c.median_vintage
-      ? `median ${c.median_vintage} · ${Math.round(c.pct_recent*100)}% born ≥2023 (${c.n_dated}/${c.n_top} dated)`
-      : 'no datable technologies';
-    host.insertAdjacentHTML('beforeend', `
-      <div class="fcard">
-        <div class="left">
-          <div class="fhead">
-            <span class="rk">#${c.rank}</span>
-            <h3>${c.label}</h3>
-            ${tb} ${cb}
-          </div>
-          <p class="desc">${c.desc}</p>
-          <div class="chips">${chips}</div>
-        </div>
-        <div class="right">
-          <div class="rlabel">Bridges these roles</div>
-          <div class="mix-bar">${segs}</div>
-          <div class="mix-key">${key}</div>
-          <div style="margin-top:18px">
-            <div class="meta-row"><span class="k">Coverage</span><span class="v">${fmt(c.coverage)} postings · ${c.n_members} skills</span></div>
-            <div class="meta-row"><span class="k">Vintage</span><span class="v">${vintage}</span></div>
-            <div class="meta-row"><span class="k">Title gap</span><span class="v">${fmt(c.n_div)} of ${fmt(c.n_pure)} pure-title postings (${Math.round(c.div_rate*100)}%) already show the bundle</span></div>
-          </div>
-        </div>
-      </div>`);
-  });
+  CANDS.slice(0,6).forEach(c=> host.insertAdjacentHTML('beforeend', cardHTML(c)));
 })();
 
 /* ---------- catalog table ---------- */
 (function table(){
   const tbody = document.querySelector('#catalog-table tbody');
-  let sortK='emergence', asc=false;
+  let sortK='emergence', asc=false, openRank=null;
   function summaryMix(m){
     return Object.entries(m).slice(0,3).map(([r,v],i,a)=>{
       const tot=Object.values(m).reduce((s,x)=>s+x,0);
@@ -821,8 +833,9 @@ const fmt = n => n.toLocaleString('en-US');
       const status = c.canon==='in-the-wild'
         ? '<span class="badge wild">in the wild</span>'
         : '<span class="badge canon">in canon</span>';
-      return `<tr>
-        <td class="rk">${c.rank}</td>
+      const open = c.rank===openRank;
+      const main = `<tr class="crow${open?' is-open':''}" data-rank="${c.rank}">
+        <td class="rk"><span class="chev">▸</span>${c.rank}</td>
         <td class="role">${c.label}</td>
         <td><span class="minibar"><span class="mt"><span class="mf" style="width:${w}%;background:${TIER_HEX[t]}"></span></span>
           <span class="mv">${es===null?'n/a':es.toFixed(2)}</span></span></td>
@@ -830,8 +843,19 @@ const fmt = n => n.toLocaleString('en-US');
         <td class="mix hide-sm">${summaryMix(c.home_mix)}</td>
         <td class="hide-sm">${status}</td>
       </tr>`;
+      const detail = open
+        ? `<tr class="detail-row"><td colspan="6">${cardHTML(c)}</td></tr>`
+        : '';
+      return main + detail;
     }).join('');
   }
+  tbody.addEventListener('click', e=>{
+    const tr = e.target.closest('tr.crow');
+    if(!tr) return;
+    const r = +tr.dataset.rank;
+    openRank = (r===openRank) ? null : r;
+    render();
+  });
   document.querySelectorAll('#catalog-table th.sortable').forEach(th=>{
     th.addEventListener('click',()=>{
       const k=th.dataset.k;
