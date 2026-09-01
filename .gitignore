@@ -1,3 +1,5 @@
-index.html.bak*
-PEER_REVIEW_*.md
-AUDIT_WORKSHEET_*.md
+# Ignore everything by default — this repo only publishes index.html
+*
+
+!index.html
+!.gitignore
