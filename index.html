@@ -615,8 +615,8 @@ tr.detail-row .fcard{border-radius:0;border-left:none;border-right:none;border-b
 <section id="featured">
   <div class="container">
     <span class="eyebrow kicker">The roles taking shape</span>
-    <h2 class="head">The six newest bundles, up close</h2>
-    <p class="lead narrow">The six candidates ranked highest on <b>recency</b> from the newest to the freshly settled. This is deliberately a different six from the widest-<i>bleeding</i> bundles charted just above: recency asks how new a bundle's tech is, bleed asks how far it reaches across roles, and the two rarely pick the same leaders. Two of the six (GitOps Platform Security Engineer, Governed BI Engineer) were judged long-settled hybrids in the July audit; they are here because their tooling is recent, not because the role is new. Each card shows the established roles the bundle draws from and the skills doing the bridging.</p>
+    <h2 class="head">A closer look at the top 10</h2>
+    <p class="lead narrow">The ten candidates ranked highest on <b>recency</b>, from the newest to the freshly settled. Ten is where the scores break: the tenth still sits at 0.111, the eleventh drops to 0.044. This is deliberately a different ten from the widest-<i>bleeding</i> bundles charted just above: recency asks how new a bundle's tech is, bleed asks how far it reaches across roles, and the two rarely pick the same leaders. Four of the ten (GitOps Platform Security Engineer, Governed BI Engineer, GitOps Delivery Security Engineer, AWS Data Platform Engineer) were judged long-settled hybrids in the July audit; they are here because their tooling is recent, not because the role is new. Each card shows the established roles the bundle draws from and the skills doing the bridging.</p>
     <div class="blegend">
       <div class="row"><span class="badge live">Emerging</span><span class="badge warm">Recent</span><span class="badge stable">Settled</span><span>The recency band, from the bundle's median technology birth year: 2018 or later, 2010 to 2017, before 2010. The number beside the badge is the recency score, 0 to 1.</span></div>
       <div class="row"><span class="badge canon">In canon</span><span>The bundle's name resolves to a job title already in common use.</span></div>
@@ -894,7 +894,7 @@ function cardHTML(c, showRank=true){
 (function featured(){
  try{
   const host = document.getElementById('featured-cards');
-  CANDS.slice(0,6).forEach(c=> host.insertAdjacentHTML('beforeend', cardHTML(c)));
+  CANDS.slice(0,10).forEach(c=> host.insertAdjacentHTML('beforeend', cardHTML(c)));
  }catch(e){ console.error('featured:',e); }
 })();
 
