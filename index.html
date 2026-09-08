@@ -287,7 +287,6 @@ td.mix{color:#5d6b67;font-size:13px}
 .rband.recent{background:#E2F0F1;color:#2b7079}
 .rband.settled{background:#eef2f0;color:#5f7b74}
 .rband.na{background:#f1f4f3;color:#8a9994}
-.rdated{display:block;font-size:10px;color:#93a29d;margin-top:2px}
 .chips-cap{font-size:11.5px;line-height:1.5;color:#8a9994;margin:14px 0 2px}
 .blegend{margin:18px 0 2px;font-size:12.5px;color:#6c7a76;display:flex;flex-direction:column;gap:9px}
 .blegend .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;line-height:1.55}
@@ -631,7 +630,7 @@ tr.detail-row .fcard{border-radius:0;border-left:none;border-right:none;border-b
   <div class="container">
     <span class="eyebrow kicker">The full set</span>
     <h2 class="head">Every candidate, ranked</h2>
-    <p class="lead narrow">All 23 detected bundles, sorted by <b>Recency</b> (how new the tech is) by default, the page's primary ranking; the # column is that recency rank, the same number the findings and validation sections refer to. Click any column heading to re-sort, including by <b>Bleed</b> (how far each crosses established roles). Each recency cell shows how many of the bundle's top skills carry a datable vintage; a median resting on one or two dated skills is a weak estimate. Coverage counts postings carrying at least two of a bundle's skills; bundles overlap, so coverage summed across all 23 exceeds the 47,101-posting corpus. "In canon" marks bundles whose name resolves to a job title already in common use (Security Engineer, Cloud Engineer, Analytics Engineer&hellip;); "in the wild" marks bundles no established title fits, so the name is descriptive. This is a check against a short list of established titles, not a lookup in O*NET, ESCO or Lightcast. Two candidates (MLOps Pipeline Engineer, Lakehouse Analytics Engineer) were marked in canon by hand because MLOps Engineer and Analytics Engineer are established titles despite the generated name. One candidate (Android XR Developer) is flagged as a detection artifact from the manual audit; see the limitations section.</p>
+    <p class="lead narrow">All 23 detected bundles, sorted by <b>Recency</b> (how new the tech is) by default, the page's primary ranking; the # column is that recency rank, the same number the findings and validation sections refer to. Click any column heading to re-sort, including by <b>Bleed</b> (how far each crosses established roles). Coverage counts postings carrying at least two of a bundle's skills; bundles overlap, so coverage summed across all 23 exceeds the 47,101-posting corpus. "In canon" marks bundles whose name resolves to a job title already in common use (Security Engineer, Cloud Engineer, Analytics Engineer&hellip;); "in the wild" marks bundles no established title fits, so the name is descriptive. This is a check against a short list of established titles, not a lookup in O*NET, ESCO or Lightcast. Two candidates (MLOps Pipeline Engineer, Lakehouse Analytics Engineer) were marked in canon by hand because MLOps Engineer and Analytics Engineer are established titles despite the generated name. One candidate (Android XR Developer) is flagged as a detection artifact from the manual audit; see the limitations section.</p>
     <div class="tablewrap">
       <table id="catalog-table">
         <thead><tr>
@@ -677,7 +676,7 @@ tr.detail-row .fcard{border-radius:0;border-left:none;border-right:none;border-b
       <div class="lim"><span class="dot"></span><div><h4>It is a snapshot, not a trend</h4><p>Emergence is inferred from canonical drift and technology vintage, never from posting-date growth. The corpus spans about five weeks.</p></div></div>
       <div class="lim"><span class="dot"></span><div><h4>It reflects Fortune 500 employers' hiring</h4><p>The corpus is large-enterprise and software-role filtered, and postings were selected by employer (Fortune-ranked companies), not by location, so a share are for roles outside the United States. Findings generalize to that population, not the whole labor market.</p></div></div>
       <div class="lim"><span class="dot"></span><div><h4>Skill extraction is imperfect</h4><p>An importance floor, a canonical-name map, and a blocklist reduce extraction noise but do not eliminate it; residual false positives (e.g. design tools inside the LLM bundle) stay visible in the skill lists rather than being silently removed. A single-rater manual audit of all 23 candidates (July 2026) flagged one as an artifact: Android XR Developer, whose cross-home edges come from the taxonomy splitting Android tooling across Mobile and VR/AR home roles. It is kept visible and flagged in the catalog rather than hidden.</p></div></div>
-      <div class="lim"><span class="dot"></span><div><h4>Technology dating is fuzzy</h4><p>Birth years are judgment calls drawn from a versioned, auditable lookup and the emergence score is a rank, not a precise date. Several bundles' medians rest on only one or two dated skills; the catalog shows each bundle's dated-skill coverage.</p></div></div>
+      <div class="lim"><span class="dot"></span><div><h4>Technology dating is fuzzy</h4><p>Birth years are judgment calls drawn from a versioned, auditable lookup and the emergence score is a rank, not a precise date. Several bundles' medians rest on only one or two dated skills.</p></div></div>
       <div class="lim"><span class="dot"></span><div><h4>Ubiquitous skills carry no signal</h4><p>A skill that co-occurs with nearly everything produces no bleed edge by design, so it is absent from the graph. A feature of the method, not a gap.</p></div></div>
       <div class="lim"><span class="dot"></span><div><h4>Hybrid jobs are prior art</h4><p>The phenomenon is well established in the literature. Our contribution is the snapshot-compatible, taxonomy-anchored, vintage-scored detection method.</p></div></div>
     </div>
@@ -862,8 +861,8 @@ function cardHTML(c, showRank=true){
     key += `<span style="white-space:nowrap"><i style="background:${MIXCOL[5]}"></i>other ${restPct}%</span>`; }
   const chips = c.bridging.slice(0,10).map(s=>`<span class="chip bridge">${s}</span>`).join('');
   const vintage = c.median_vintage
-    ? `median ${c.median_vintage}${c.pct_recent>0?` · ${Math.round(c.pct_recent*100)}% born ≥2023`:``} (${c.n_dated}/${c.n_top} dated)`
-    : `${c.n_dated}/${c.n_top} skills dated, too thin to score`;
+    ? `median ${c.median_vintage}${c.pct_recent>0?` · ${Math.round(c.pct_recent*100)}% born ≥2023`:``}`
+    : `too thin to score`;
   return `
     <div class="fcard">
       <div class="left">
@@ -912,10 +911,10 @@ function cardHTML(c, showRank=true){
     }).join(' · ');
   }
   function recencyCell(c){
-    if(c.emergence===null||c.median_vintage==null) return `<span class="rband na">not scored</span><span class="rdated">${c.n_dated}/${c.n_top} dated</span>`;
+    if(c.emergence===null||c.median_vintage==null) return `<span class="rband na">not scored</span>`;
     const yr=c.median_vintage;
     const b = yr>=2018?['emerging','Emerging'] : yr>=2010?['recent','Recent'] : ['settled','Settled'];
-    return `<span class="ryear">${yr}</span><span class="rband ${b[0]}">${b[1]}</span><span class="rdated">${c.n_dated}/${c.n_top} dated</span>`;
+    return `<span class="ryear">${yr}</span><span class="rband ${b[0]}">${b[1]}</span>`;
   }
   function bleedCell(c){
     const bl=c.bleed;
