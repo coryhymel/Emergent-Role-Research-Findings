@@ -614,13 +614,9 @@ tr.detail-row .fcard{border-radius:0;border-left:none;border-right:none;border-b
 <section id="featured">
   <div class="container">
     <span class="eyebrow kicker">The roles taking shape</span>
-    <h2 class="head">A closer look at the top 10</h2>
-    <p class="lead narrow">The ten candidates ranked highest on <b>recency</b>, from the newest to the freshly settled. Ten is where the scores break: the tenth still sits at 0.111, the eleventh drops to 0.044. This is deliberately a different ten from the widest-<i>bleeding</i> bundles charted just above: recency asks how new a bundle's tech is, bleed asks how far it reaches across roles, and the two rarely pick the same leaders. Four of the ten (GitOps Platform Security Engineer, Governed BI Engineer, GitOps Delivery Security Engineer, AWS Data Platform Engineer) were judged long-settled hybrids in the July audit; they are here because their tooling is recent, not because the role is new. Each card shows the established roles the bundle draws from and the skills doing the bridging.</p>
-    <div class="blegend">
-      <div class="row"><span class="badge live">Emerging</span><span class="badge warm">Recent</span><span class="badge stable">Settled</span><span>The recency band, from the bundle's median technology birth year: 2018 or later, 2010 to 2017, before 2010. The number beside the badge is the recency score, 0 to 1.</span></div>
-      <div class="row"><span class="badge canon">In canon</span><span>The bundle's name resolves to a job title already in common use.</span></div>
-      <div class="row"><span class="badge wild">In the wild</span><span>Fortune 500 hiring shows it, but no established title fits; the name is descriptive.</span></div>
-    </div>
+    <h2 class="head">Eight roles of note.</h2>
+    <p class="lead narrow">Of the 23 candidates detected, we’d like to highlight eight that are of note. These roles are some of the stronger signals that we saw in the dataset and worth calling out.
+</p>
     <div class="feat" id="featured-cards"></div>
   </div>
 </section>
@@ -630,7 +626,7 @@ tr.detail-row .fcard{border-radius:0;border-left:none;border-right:none;border-b
   <div class="container">
     <span class="eyebrow kicker">The full set</span>
     <h2 class="head">Every candidate, ranked</h2>
-    <p class="lead narrow">All 23 detected bundles, sorted by <b>Recency</b> (how new the tech is) by default, the page's primary ranking; the # column is that recency rank, the same number the findings and validation sections refer to. Click any column heading to re-sort, including by <b>Bleed</b> (how far each crosses established roles). Coverage counts postings carrying at least two of a bundle's skills; bundles overlap, so coverage summed across all 23 exceeds the 47,101-posting corpus. "In canon" marks bundles whose name resolves to a job title already in common use (Security Engineer, Cloud Engineer, Analytics Engineer&hellip;); "in the wild" marks bundles no established title fits, so the name is descriptive. This is a check against a short list of established titles, not a lookup in O*NET, ESCO or Lightcast. Two candidates (MLOps Pipeline Engineer, Lakehouse Analytics Engineer) were marked in canon by hand because MLOps Engineer and Analytics Engineer are established titles despite the generated name. One candidate (Android XR Developer) is flagged as a detection artifact from the manual audit; see the limitations section.</p>
+    <p class="lead narrow">All 23 detected bundles, sorted by <b>Recency</b> (how new the tech is) by default, the page's primary ranking; the # column is that recency rank, the same number the findings and validation sections refer to. Click any column heading to re-sort, including by <b>Bleed</b> (how far each crosses established roles). <br/><br/>Coverage counts postings carrying at least two of a bundle's skills; bundles overlap, so coverage summed across all 23 exceeds the 47,101-posting corpus. "In canon" marks bundles whose name resolves to a job title already in common use (Security Engineer, Cloud Engineer, Analytics Engineer&hellip;); "in the wild" marks bundles no established title fits, so the name is descriptive. This is a check against a short list of established titles, not a lookup in O*NET, ESCO or Lightcast.</p>
     <div class="tablewrap">
       <table id="catalog-table">
         <thead><tr>
@@ -839,7 +835,7 @@ const fmt = n => n.toLocaleString('en-US');
 
 /* ---------- featured card markup (shared by featured section + table detail rows) ---------- */
 const MIXCOL = ['#338632','#307C84','#7CBFC7','#7FC87C','#B0D6CE','#cbd6d2'];
-function cardHTML(c, showRank=true){
+function cardHTML(c, showRank=true, showBadges=true){
   const t = tierOf(c);
   const tb = `<span class="badge ${t}" title="Recency band from the bundle's median technology birth year (Emerging: 2018 or later; Recent: 2010 to 2017; Settled: before 2010). The number beside it is the recency score from 0 to 1, combining how many skills were born 2023 or later with the normalized median birth year.">${tierLabel(t)}${c.emergence!==null?' · '+c.emergence.toFixed(3):''}</span>`;
   const ab = c.artifact ? ' <span class="badge na" title="Flagged in the July 2026 manual audit as a detection artifact: the bundle contains no XR-specific skills; its cross-home edges come from Android tooling being split across Mobile and VR/AR home roles">flagged artifact</span>' : '';
@@ -869,7 +865,7 @@ function cardHTML(c, showRank=true){
         <div class="fhead">
           ${showRank?`<span class="rk">#${c.rank}</span>`:``}
           <h3>${c.label}</h3>
-          ${tb} ${cb}${ab}
+          ${showBadges?`${tb} ${cb}${ab}`:``}
         </div>
         <p class="desc">${c.desc}</p>
         <div class="chips-cap">The detected bundle: ${Math.min(10,c.bridging.length)} of its ${c.n_members} skills, each with its canonical home in one of the roles this candidate bridges. These are the skills doing the bleeding, not a full job profile: ubiquitous skills (Python, Git, SQL&hellip;) carry no bleed signal and are excluded by design.</div>
@@ -893,7 +889,7 @@ function cardHTML(c, showRank=true){
 (function featured(){
  try{
   const host = document.getElementById('featured-cards');
-  CANDS.slice(0,10).forEach(c=> host.insertAdjacentHTML('beforeend', cardHTML(c)));
+  CANDS.filter(c=> c.audit_verdict==='GENUINE').forEach(c=> host.insertAdjacentHTML('beforeend', cardHTML(c,false,false)));
  }catch(e){ console.error('featured:',e); }
 })();
 
